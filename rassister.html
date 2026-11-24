@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>DANTESHWARI CEMENT PRODUCT — ERP | Logical Door Automation</title>
+  
+  <!-- Tailwind CSS & PouchDB CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pouchdb@9.0.0/dist/pouchdb.min.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b1120;
+      color: #f8fafc;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+    .tab-active {
+      background: #d97706;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-20 md:pb-6">
+
+  <!-- TOP BRAND HEADER -->
+  <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-700 flex items-center justify-center font-extrabold text-white text-lg shadow-md">
+          DC
+        </div>
+        <div>
+          <h1 class="text-base md:text-xl font-extrabold tracking-tight text-white leading-tight">
+            <span class="text-amber-400">DANTESHWARI CEMENT PRODUCT</span>
+          </h1>
+          <p class="text-[11px] text-slate-400 tracking-wide uppercase font-semibold">
+            Powered by <span class="text-cyan-400">Logical Door Automation</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Sync Status & Quick Actions -->
+      <div class="flex items-center gap-2">
+        <div id="syncBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 border border-slate-700 text-emerald-400">
+          <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="syncText">Local IndexedDB Ready</span>
+        </div>
+        <button onclick="openModal('syncModal')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700" title="Multi-Device Sync Settings">
+          ⚙️ Sync
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="max-w-7xl w-full mx-auto px-4 pt-5 flex-1">
+
+    <!-- NAVIGATION TABS -->
+    <nav class="grid grid-cols-4 gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800 mb-6">
+      <button onclick="switchTab('register')" id="tab-register" class="tab-active py-2.5 px-3 rounded-lg text-xs md:text-sm font-semibold transition flex items-center justify-center gap-1.5">
+        📒 <span class="hidden sm:inline">Daily</span> Register
+      </button>
+      <button onclick="switchTab('orders')" id="tab-orders" class="py-2.5 px-3 rounded-lg text-xs md:text-sm font-semibold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        🧱 Orders <span class="hidden sm:inline">(Lock Profile)</span>
+      </button>
+      <button onclick="switchTab('logie')" id="tab-logie" class="py-2.5 px-3 rounded-lg text-xs md:text-sm font-semibold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        🤖 Mr. Logie <span class="hidden sm:inline">AI</span>
+      </button>
+      <button onclick="switchTab('reports')" id="tab-reports" class="py-2.5 px-3 rounded-lg text-xs md:text-sm font-semibold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        📊 Export <span class="hidden sm:inline">& Clear</span>
+      </button>
+    </nav>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: DAILY PAYMENT REGISTER (MULTI-OWNER: VIJAY, JAY & NONE)        -->
+    <!-- ===================================================================== -->
+    <section id="view-register" class="space-y-5">
+      <!-- Date & Balance Control Bar -->
+      <div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-semibold uppercase text-slate-400">Register Date:</label>
+          <input type="date" id="regDate" onchange="loadDailyRegister()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white font-semibold focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="openBalanceEditor()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-amber-400 transition">
+            ✏️ Edit Opening / Closing Balances
+          </button>
+          <button onclick="clearCurrentDayRegister()" class="px-3 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-800/70 text-xs font-semibold text-rose-300 transition">
+            🧹 Clear Today's Entries
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Owner KPI Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass-card rounded-2xl p-4 border-l-4 border-l-amber-500">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold uppercase text-slate-400">Vijay — Account Balance</p>
+              <h2 id="vijayClosing" class="text-2xl font-extrabold text-white mt-1">₹0</h2>
+            </div>
+            <span class="px-2 py-0.5 text-[11px] rounded bg-amber-500/20 text-amber-300 font-semibold">Owner 1</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Opening: <span id="vijayOpening" class="text-slate-200 font-semibold">₹0</span></p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-4 border-l-4 border-l-cyan-500">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold uppercase text-slate-400">Jay — Account Balance</p>
+              <h2 id="jayClosing" class="text-2xl font-extrabold text-white mt-1">₹0</h2>
+            </div>
+            <span class="px-2 py-0.5 text-[11px] rounded bg-cyan-500/20 text-cyan-300 font-semibold">Owner 2</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Opening: <span id="jayOpening" class="text-slate-200 font-semibold">₹0</span></p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-4 border-l-4 border-l-emerald-500">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold uppercase text-slate-400">Physical Cash in Hand</p>
+              <h2 id="cashClosing" class="text-2xl font-extrabold text-emerald-400 mt-1">₹0</h2>
+            </div>
+            <span id="overrideBadge" class="hidden px-2 py-0.5 text-[10px] rounded bg-rose-500/20 text-rose-300 font-semibold">Manual Override</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Opening Cash: <span id="cashOpening" class="text-slate-200 font-semibold">₹0</span></p>
+        </div>
+      </div>
+
+      <!-- Add Expense / Receipt Entry Form -->
+      <div class="glass-card rounded-2xl p-5">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-amber-400 mb-4">+ Record Daily Cash / Expense Entry</h3>
+        <form id="ledgerForm" onsubmit="handleAddLedgerEntry(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Owner Account</label>
+            <select id="entryOwner" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="Vijay">Vijay</option>
+              <option value="Jay">Jay</option>
+              <option value="None">None</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Type (Flow)</label>
+            <select id="entryFlow" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="OUT">Expense (OUT -)</option>
+              <option value="IN">Receipt (IN +)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Amount (₹)</label>
+            <input type="number" id="entryAmount" step="0.01" min="1" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Category</label>
+            <select id="entryCategory" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="Raw Material (Cement/FlyAsh)">Raw Material</option>
+              <option value="Diesel & Transport">Diesel & Transport</option>
+              <option value="Labour & Wages">Labour & Wages</option>
+              <option value="Plant Maintenance">Plant Maintenance</option>
+              <option value="Office & Tea">Office & Misc</option>
+              <option value="Customer Receipt">Customer Receipt</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Payment Mode</label>
+            <select id="entryMode" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="Cash">Cash</option>
+              <option value="UPI / QR">UPI / QR</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Custom Tags (comma separated)</label>
+            <input type="text" id="entryTags" placeholder="e.g. tractor, urgent" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+          </div>
+          <div class="sm:col-span-2 lg:col-span-5">
+            <input type="text" id="entryNote" placeholder="Remarks / Voucher details..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+          </div>
+          <div>
+            <button type="submit" class="w-full h-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition shadow">
+              Save Entry
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-slate-800 flex justify-between items-center">
+          <h3 class="text-sm font-bold text-white">Today's Register Transactions</h3>
+          <span id="txnCountBadge" class="text-xs text-slate-400">0 entries</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-900/80 text-slate-400 text-xs uppercase">
+              <tr>
+                <th class="px-4 py-3">Time</th>
+                <th class="px-4 py-3">Owner</th>
+                <th class="px-4 py-3">Category & Note</th>
+                <th class="px-4 py-3">Tags</th>
+                <th class="px-4 py-3">Mode</th>
+                <th class="px-4 py-3 text-right">Amount</th>
+                <th class="px-4 py-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="registerTableBody" class="divide-y divide-slate-800/80">
+              <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No entries recorded for this date.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: ORDER MANAGEMENT (LOCK PROFILE METHOD & ZERO DOUBLE-ENTRY)     -->
+    <!-- ===================================================================== -->
+    <section id="view-orders" class="hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- STEP 1: LOCK CUSTOMER PROFILE -->
+        <div class="lg:col-span-5 glass-card rounded-2xl p-5 border-t-4 border-t-cyan-500">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400">Step 1: Lock Customer Profile</h3>
+            <span id="lockStatusBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400">🔓 UNLOCKED</span>
+          </div>
+          <p class="text-xs text-slate-400 mb-4">Locking binds the customer's phone ID before billing to eliminate duplicate accounts and double-entry errors.</p>
+
+          <div class="mb-4">
+            <label class="block text-[11px] text-slate-400 mb-1">Quick Select Existing Customer</label>
+            <select id="existingCustomerSelect" onchange="prefillCustomerFromSelect()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+              <option value="">-- New or Select Saved Customer --</option>
+            </select>
+          </div>
+
+          <div class="space-y-3" id="profileFormFields">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Customer Phone (Unique Key) *</label>
+              <input type="tel" id="custPhone" placeholder="e.g. 98261XXXXX" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Customer / Contractor Name *</label>
+              <input type="text" id="custName" placeholder="e.g. Rajesh Verma Builders" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Delivery Site / Address</label>
+              <input type="text" id="custAddress" placeholder="e.g. Dharampura, Jagdalpur" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+            </div>
+          </div>
+
+          <div class="mt-4 flex gap-2">
+            <button id="btnLockProfile" onclick="lockCustomerProfile()" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition">
+              🔒 Lock Profile for Order
+            </button>
+            <button id="btnUnlockProfile" onclick="unlockCustomerProfile()" class="hidden flex-1 bg-slate-700 hover:bg-slate-600 text-amber-300 font-bold py-2.5 px-4 rounded-lg text-sm transition">
+              🔓 Unlock / Switch Customer
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: CREATE ORDER (LOCKED UNTIL PROFILE IS LOCKED) -->
+        <div id="orderEntryCard" class="lg:col-span-7 glass-card rounded-2xl p-5 border-t-4 border-t-amber-500 opacity-50 pointer-events-none transition">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-amber-400">Step 2: Dispatch & Billing Order</h3>
+              <p class="text-xs text-slate-400">Locked Customer: <strong id="lockedCustLabel" class="text-white">None</strong></p>
+            </div>
+            <div class="bg-slate-900 border border-amber-500/40 px-3 py-1 rounded-lg">
+              <span class="text-[11px] text-slate-400 block">Serial Number</span>
+              <span id="orderSerialDisplay" class="text-sm font-mono font-bold text-amber-400">DCP-2026-0001</span>
+            </div>
+          </div>
+
+          <form id="orderForm" onsubmit="handleCreateOrder(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Product Line</label>
+                <select id="ordProduct" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+                  <option value="9-Inch FlyAsh Brick">9-Inch FlyAsh Brick</option>
+                  <option value="4-Inch FlyAsh Brick">4-Inch FlyAsh Brick</option>
+                  <option value="Solid Concrete Block">Solid Concrete Block</option>
+                  <option value="Interlocking Paver Block">Interlocking Paver Block</option>
+                  <option value="RCC Ring / Pole">RCC Ring / Pole</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Quantity (Pieces)</label>
+                <input type="number" id="ordQty" min="1" value="1000" oninput="recalcOrderTotal()" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Rate per Unit (₹)</label>
+                <input type="number" id="ordRate" step="0.01" min="0.1" value="7.50" oninput="recalcOrderTotal()" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-900/70 p-3 rounded-xl border border-slate-800">
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Total Bill (₹)</label>
+                <input type="number" id="ordTotal" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm font-bold text-amber-400" value="7500" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Amount Paid Now (₹)</label>
+                <input type="number" id="ordPaid" step="0.01" min="0" value="7500" oninput="recalcOrderTotal()" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm font-bold text-emerald-400" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Explicit Payment Mode *</label>
+                <select id="ordPayMode" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+                  <option value="Cash">Cash</option>
+                  <option value="UPI / QR">UPI / QR</option>
+                  <option value="Bank Transfer (NEFT/RTGS)">Bank Transfer</option>
+                  <option value="Credit (Udhaar)">Credit (Udhaar)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Receiving Owner</label>
+                <select id="ordOwner" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+                  <option value="Vijay">Vijay</option>
+                  <option value="Jay">Jay</option>
+                  <option value="None">None</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <p class="text-xs text-slate-400">Balance Due (Udhaar): <span id="ordDueDisplay" class="font-bold text-rose-400">₹0</span></p>
+              <button type="submit" id="btnSubmitOrder" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-lg text-sm shadow-lg transition">
+                ✅ Commit Order & Post to Register
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Recent Orders List -->
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-slate-800 flex justify-between items-center">
+          <h3 class="text-sm font-bold text-white">Confirmed Plant Orders</h3>
+          <div class="flex items-center gap-3">
+            <span id="orderCountBadge" class="text-xs text-slate-400">0 orders</span>
+            <button onclick="clearAllOrders()" class="px-2.5 py-1 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-800/70 text-[11px] font-semibold text-rose-300 transition">
+              🧹 Clear All Orders
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-900/80 text-slate-400 text-xs uppercase">
+              <tr>
+                <th class="px-4 py-3">Serial No</th>
+                <th class="px-4 py-3">Date</th>
+                <th class="px-4 py-3">Customer</th>
+                <th class="px-4 py-3">Item & Qty</th>
+                <th class="px-4 py-3">Mode (Owner)</th>
+                <th class="px-4 py-3 text-right">Total</th>
+                <th class="px-4 py-3 text-right">Due</th>
+                <th class="px-4 py-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody" class="divide-y divide-slate-800/80">
+              <tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No orders placed yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: MR. LOGIE — ON-DEVICE AI ASSISTANT                             -->
+    <!-- ===================================================================== -->
+    <section id="view-logie" class="hidden">
+      <div class="max-w-3xl mx-auto glass-card rounded-2xl overflow-hidden flex flex-col h-[72vh]">
+        <div class="bg-slate-900 px-5 py-3.5 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-lg">🤖</div>
+            <div>
+              <h3 class="text-sm font-bold text-white">Mr. Logie <span class="text-xs font-normal text-cyan-400">(On-Device Local AI)</span></h3>
+              <p class="text-[11px] text-slate-400">Direct PouchDB Query Engine • Offline Ready</p>
+            </div>
+          </div>
+          <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">DB CONNECTED</span>
+        </div>
+
+        <div id="logieChatFeed" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm">
+          <div class="bg-slate-800/90 border border-slate-700 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-slate-200">
+            Namaste! I am <strong>Mr. Logie</strong> from Logical Door Automation. I have direct read access to <strong>DANTESHWARI CEMENT PRODUCT's</strong> local database.<br/><br/>
+            Try asking me:
+            <ul class="list-disc list-inside text-xs text-cyan-300 mt-1 space-y-1">
+              <li>"Today's summary" or "Vijay and Jay hisab"</li>
+              <li>Simply type any <strong>Customer Name</strong> (e.g. "Rajesh" or "Verma") or <strong>Phone Number</strong></li>
+              <li>"Show pending udhaar"</li>
+              <li>"Today's expenses"</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="px-4 py-2 bg-slate-900/60 border-t border-slate-800 flex gap-2 overflow-x-auto">
+          <button onclick="askLogieQuick('Today summary')" class="whitespace-nowrap px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-cyan-300 border border-slate-700">📊 Today's Summary</button>
+          <button onclick="askLogieQuick('Pending udhaar')" class="whitespace-nowrap px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-amber-300 border border-slate-700">⏳ Pending Udhaar</button>
+          <button onclick="askLogieQuick('Today expenses')" class="whitespace-nowrap px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-rose-300 border border-slate-700">💸 Today's Expenses</button>
+          <button onclick="askLogieQuick('All customers')" class="whitespace-nowrap px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-xs text-emerald-300 border border-slate-700">👥 Customer List</button>
+        </div>
+
+        <form onsubmit="handleLogieSubmit(event)" class="p-3 bg-slate-900 border-t border-slate-800 flex gap-2">
+          <input type="text" id="logieInput" placeholder="Type customer name, phone number, or ask about balances..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          <button type="submit" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition">
+            Ask
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: CSV EXPORTS & DATA CLEANUP                                     -->
+    <!-- ===================================================================== -->
+    <section id="view-reports" class="hidden space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-1">📥 Export Orders Ledger (CSV)</h3>
+          <p class="text-xs text-slate-400 mb-4">Downloads all synced plant orders with serial numbers, customer profiles, payment modes, and pending balances.</p>
+          <button onclick="exportCSV('orders')" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow">
+            Download Orders CSV
+          </button>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="text-base font-bold text-white mb-1">📥 Export Daily Payment Register (CSV)</h3>
+          <p class="text-xs text-slate-400 mb-4">Downloads all daily cash/bank transactions across Vijay, Jay & None accounts including expense categories and custom tags.</p>
+          <button onclick="exportCSV('register')" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow">
+            Download Daily Register CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Database Diagnostics & Full Reset -->
+      <div class="glass-card rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 border border-rose-900/40">
+        <div>
+          <h4 class="text-sm font-bold text-white">Database Diagnostics & Cleanup</h4>
+          <p id="dbStatsText" class="text-xs text-slate-400 mt-0.5">Calculating local IndexedDB records...</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="resetEntireDatabase()" class="px-4 py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-xs font-bold text-white shadow transition">
+            🗑️ Reset / Wipe All Test Data
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="max-w-7xl w-full mx-auto px-4 pt-6 pb-2 text-center text-xs text-slate-500">
+    <span class="text-slate-400 font-semibold">DANTESHWARI CEMENT PRODUCT</span> • Industrial ERP System • Engineered by <strong class="text-cyan-500">Logical Door Automation</strong>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: EDIT OPENING / CLOSING BALANCES                              -->
+  <!-- ===================================================================== -->
+  <div id="balanceModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <h3 class="text-base font-bold text-white">Edit Daily Balances (<span id="modalDateLabel"></span>)</h3>
+      
+      <div class="space-y-3">
+        <p class="text-xs font-semibold uppercase text-amber-400">Opening Balances (₹)</p>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-[11px] text-slate-400">Vijay Open</label>
+            <input type="number" id="editVijayOpen" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">Jay Open</label>
+            <input type="number" id="editJayOpen" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">Cash Open</label>
+            <input type="number" id="editCashOpen" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800">
+          <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+            <input type="checkbox" id="chkManualClosing" onchange="toggleClosingInputs()" class="rounded bg-slate-800 border-slate-600" />
+            Manually Override Closing Balances
+          </label>
+        </div>
+
+        <div id="manualClosingGroup" class="grid grid-cols-3 gap-2 opacity-40 pointer-events-none">
+          <div>
+            <label class="text-[11px] text-slate-400">Vijay Close</label>
+            <input type="number" id="editVijayClose" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">Jay Close</label>
+            <input type="number" id="editJayClose" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">Cash Close</label>
+            <input type="number" id="editCashClose" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-white" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3">
+        <button onclick="closeModal('balanceModal')" class="px-4 py-2 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">Cancel</button>
+        <button onclick="saveEditedBalances()" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-bold text-white">Save Balances</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: POUCHDB MULTI-DEVICE SYNC SETTINGS                           -->
+  <!-- ===================================================================== -->
+  <div id="syncModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <h3 class="text-base font-bold text-white">Multi-Device Background Sync (CouchDB)</h3>
+      <p class="text-xs text-slate-400">Enter your local plant server or cloud CouchDB URL to replicate IndexedDB across all phones & office PCs automatically.</p>
+      <div>
+        <label class="block text-[11px] text-slate-400 mb-1">Remote CouchDB Endpoint URL</label>
+        <input type="url" id="couchUrlInput" placeholder="http://192.168.1.100:5984/danteshwari_db" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('syncModal')" class="px-4 py-2 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">Close</button>
+        <button onclick="saveSyncEndpoint()" class="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-bold text-white">Connect & Sync</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT ENGINE                                         -->
+  <!-- ===================================================================== -->
+  <script>
+    // -------------------------------------------------------------------------
+    // 1. PWA MANIFEST & INLINE SERVICE WORKER (OFFLINE-FIRST)
+    // -------------------------------------------------------------------------
+    const manifestObj = {
+      name: "DANTESHWARI CEMENT PRODUCT ERP",
+      short_name: "DCP ERP",
+      start_url: ".",
+      display: "standalone",
+      background_color: "#0b1120",
+      theme_color: "#d97706",
+      icons: [{
+        src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23d97706'/><text x='50' y='66' font-size='48' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>DC</text></svg>",
+        sizes: "192x192",
+        type: "image/svg+xml"
+      }]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = URL.createObjectURL(manifestBlob);
+    document.head.appendChild(manifestLink);
+
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      const swCode = `
+        const CACHE = 'danteshwari-erp-v2';
+        self.addEventListener('install', e => {
+          e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
+        });
+        self.addEventListener('fetch', e => {
+          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+        });
+      `;
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. POUCHDB INITIALIZATION & LIVE REPLICATION
+    // -------------------------------------------------------------------------
+    let db = new PouchDB('danteshwari_cement_erp_v1', { auto_compaction: true });
+    let syncHandler = null;
+
+    const IDGen = {
+      dailyLedger: (dateStr) => `ledger_${dateStr}`,
+      customer: (phone) => `cust_${phone.replace(/\D/g, '')}`,
+      order: (serialNo) => `order_${serialNo}`
+    };
+
+    function initSync() {
+      const remoteUrl = localStorage.getItem('dcp_couch_url');
+      if (remoteUrl) {
+        document.getElementById('couchUrlInput').value = remoteUrl;
+        if (syncHandler) syncHandler.cancel();
+
+        syncHandler = db.sync(remoteUrl, { live: true, retry: true })
+          .on('change', () => {
+            updateSyncUI('Synced Live', 'bg-emerald-400', 'text-emerald-400');
+            refreshAllViews();
+          })
+          .on('paused', (err) => {
+            if (err) updateSyncUI('Offline (Queued)', 'bg-amber-400', 'text-amber-400');
+            else updateSyncUI('Synced & Up-to-date', 'bg-emerald-400', 'text-emerald-400');
+          })
+          .on('active', () => updateSyncUI('Syncing...', 'bg-cyan-400', 'text-cyan-400'))
+          .on('error', () => updateSyncUI('Sync Error (Local Safe)', 'bg-rose-400', 'text-rose-400'));
+      }
+    }
+
+    function updateSyncUI(text, dotClass, textClass) {
+      document.getElementById('syncText').textContent = text;
+      document.getElementById('syncText').className = textClass;
+      document.getElementById('syncDot').className = `w-2 h-2 rounded-full ${dotClass}`;
+    }
+
+    function saveSyncEndpoint() {
+      const url = document.getElementById('couchUrlInput').value.trim();
+      if (url) localStorage.setItem('dcp_couch_url', url);
+      else localStorage.removeItem('dcp_couch_url');
+      closeModal('syncModal');
+      initSync();
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. DAILY PAYMENT REGISTER ENGINE (ZERO AUTO-ENTRIES + DELETE SUPPORT)
+    // -------------------------------------------------------------------------
+    const todayISO = () => new Date().toISOString().split('T')[0];
+
+    // Strictly starts at ₹0 unless manually edited—never injects ghost balances
+    async function getOrCreateDailyRegister(dateStr) {
+      const id = IDGen.dailyLedger(dateStr);
+      try {
+        return await db.get(id);
+      } catch (err) {
+        if (err.status === 404) {
+          const doc = {
+            _id: id,
+            type: 'daily_register',
+            date: dateStr,
+            openingBalance: { vijay: 0, jay: 0, cash: 0 },
+            closingBalance: { vijay: 0, jay: 0, cash: 0 },
+            isClosingOverridden: false,
+            transactions: []
+          };
+          await db.put(doc);
+          return await db.get(id);
+        }
+        throw err;
+      }
+    }
+
+    function calculateClosing(opening, transactions) {
+      const bal = {
+        vijay: Number(opening.vijay || 0),
+        jay: Number(opening.jay || 0),
+        cash: Number(opening.cash || 0)
+      };
+      for (const t of transactions) {
+        const amt = Number(t.amount);
+        const delta = t.flow === 'IN' ? amt : -amt;
+        if (t.owner === 'Vijay') bal.vijay += delta;
+        if (t.owner === 'Jay') bal.jay += delta;
+        if (t.mode === 'Cash') bal.cash += delta;
+      }
+      return bal;
+    }
+
+    async function addLedgerEntry(dateStr, entry) {
+      const reg = await getOrCreateDailyRegister(dateStr);
+      if (reg.transactions.some(t => t.idempotencyKey === entry.idempotencyKey)) {
+        throw new Error('Duplicate transaction prevented.');
+      }
+      reg.transactions.push({
+        ...entry,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      if (!reg.isClosingOverridden) {
+        reg.closingBalance = calculateClosing(reg.openingBalance, reg.transactions);
+      }
+      await db.put(reg);
+      if (document.getElementById('regDate').value === dateStr) {
+        await loadDailyRegister();
+      }
+    }
+
+    async function deleteLedgerEntry(idempotencyKey) {
+      if (!confirm('Delete this payment/expense entry? Balances will recalculate automatically.')) return;
+      const dateStr = document.getElementById('regDate').value;
+      const reg = await getOrCreateDailyRegister(dateStr);
+      reg.transactions = reg.transactions.filter(t => t.idempotencyKey !== idempotencyKey);
+      if (!reg.isClosingOverridden) {
+        reg.closingBalance = calculateClosing(reg.openingBalance, reg.transactions);
+      }
+      await db.put(reg);
+      await loadDailyRegister();
+    }
+
+    async function clearCurrentDayRegister() {
+      const dateStr = document.getElementById('regDate').value;
+      if (!confirm(`Clear ALL transactions and reset balances to ₹0 for ${dateStr}?`)) return;
+      const reg = await getOrCreateDailyRegister(dateStr);
+      reg.openingBalance = { vijay: 0, jay: 0, cash: 0 };
+      reg.closingBalance = { vijay: 0, jay: 0, cash: 0 };
+      reg.isClosingOverridden = false;
+      reg.transactions = [];
+      await db.put(reg);
+      await loadDailyRegister();
+    }
+
+    async function handleAddLedgerEntry(e) {
+      e.preventDefault();
+      const dateStr = document.getElementById('regDate').value;
+      const tagsRaw = document.getElementById('entryTags').value;
+      const tags = tagsRaw ? tagsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      await addLedgerEntry(dateStr, {
+        idempotencyKey: `manual_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        owner: document.getElementById('entryOwner').value,
+        flow: document.getElementById('entryFlow').value,
+        amount: Number(document.getElementById('entryAmount').value),
+        category: document.getElementById('entryCategory').value,
+        mode: document.getElementById('entryMode').value,
+        tags,
+        note: document.getElementById('entryNote').value.trim()
+      });
+
+      document.getElementById('entryAmount').value = '';
+      document.getElementById('entryTags').value = '';
+      document.getElementById('entryNote').value = '';
+    }
+
+    function getOwnerColorClass(owner) {
+      if (owner === 'Vijay') return 'text-amber-400';
+      if (owner === 'Jay') return 'text-cyan-400';
+      return 'text-slate-400';
+    }
+
+    async function loadDailyRegister() {
+      const dateStr = document.getElementById('regDate').value || todayISO();
+      const reg = await getOrCreateDailyRegister(dateStr);
+
+      document.getElementById('vijayOpening').textContent = `₹${reg.openingBalance.vijay.toLocaleString('en-IN')}`;
+      document.getElementById('jayOpening').textContent = `₹${reg.openingBalance.jay.toLocaleString('en-IN')}`;
+      document.getElementById('cashOpening').textContent = `₹${reg.openingBalance.cash.toLocaleString('en-IN')}`;
+
+      document.getElementById('vijayClosing').textContent = `₹${reg.closingBalance.vijay.toLocaleString('en-IN')}`;
+      document.getElementById('jayClosing').textContent = `₹${reg.closingBalance.jay.toLocaleString('en-IN')}`;
+      document.getElementById('cashClosing').textContent = `₹${reg.closingBalance.cash.toLocaleString('en-IN')}`;
+
+      const ovBadge = document.getElementById('overrideBadge');
+      if (reg.isClosingOverridden) ovBadge.classList.remove('hidden');
+      else ovBadge.classList.add('hidden');
+
+      const tbody = document.getElementById('registerTableBody');
+      document.getElementById('txnCountBadge').textContent = `${reg.transactions.length} entries`;
+
+      if (!reg.transactions.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No entries recorded for ${dateStr}.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = [...reg.transactions].reverse().map(t => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="px-4 py-3 text-xs text-slate-400 font-mono">${t.timestamp}</td>
+          <td class="px-4 py-3 font-semibold ${getOwnerColorClass(t.owner)}">${t.owner}</td>
+          <td class="px-4 py-3">
+            <div class="font-medium text-white">${t.category}</div>
+            ${t.note ? `<div class="text-xs text-slate-400">${t.note}</div>` : ''}
+          </td>
+          <td class="px-4 py-3">
+            ${(t.tags || []).map(tag => `<span class="inline-block px-2 py-0.5 mr-1 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">#${tag}</span>`).join('')}
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-300">${t.mode}</td>
+          <td class="px-4 py-3 text-right font-bold ${t.flow === 'IN' ? 'text-emerald-400' : 'text-rose-400'}">
+            ${t.flow === 'IN' ? '+' : '-'}₹${Number(t.amount).toLocaleString('en-IN')}
+          </td>
+          <td class="px-4 py-3 text-center">
+            <button onclick="deleteLedgerEntry('${t.idempotencyKey}')" class="px-2 py-1 rounded bg-rose-950/80 hover:bg-rose-800 text-rose-300 text-xs transition" title="Delete Entry">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Balance Editor Modal Functions
+    async function openBalanceEditor() {
+      const dateStr = document.getElementById('regDate').value;
+      const reg = await getOrCreateDailyRegister(dateStr);
+      document.getElementById('modalDateLabel').textContent = dateStr;
+      document.getElementById('editVijayOpen').value = reg.openingBalance.vijay;
+      document.getElementById('editJayOpen').value = reg.openingBalance.jay;
+      document.getElementById('editCashOpen').value = reg.openingBalance.cash;
+
+      document.getElementById('chkManualClosing').checked = reg.isClosingOverridden;
+      document.getElementById('editVijayClose').value = reg.closingBalance.vijay;
+      document.getElementById('editJayClose').value = reg.closingBalance.jay;
+      document.getElementById('editCashClose').value = reg.closingBalance.cash;
+      toggleClosingInputs();
+      openModal('balanceModal');
+    }
+
+    function toggleClosingInputs() {
+      const grp = document.getElementById('manualClosingGroup');
+      if (document.getElementById('chkManualClosing').checked) grp.classList.remove('opacity-40', 'pointer-events-none');
+      else grp.classList.add('opacity-40', 'pointer-events-none');
+    }
+
+    async function saveEditedBalances() {
+      const dateStr = document.getElementById('regDate').value;
+      const reg = await getOrCreateDailyRegister(dateStr);
+      reg.openingBalance = {
+        vijay: Number(document.getElementById('editVijayOpen').value || 0),
+        jay: Number(document.getElementById('editJayOpen').value || 0),
+        cash: Number(document.getElementById('editCashOpen').value || 0)
+      };
+      reg.isClosingOverridden = document.getElementById('chkManualClosing').checked;
+      if (reg.isClosingOverridden) {
+        reg.closingBalance = {
+          vijay: Number(document.getElementById('editVijayClose').value || 0),
+          jay: Number(document.getElementById('editJayClose').value || 0),
+          cash: Number(document.getElementById('editCashClose').value || 0)
+        };
+      } else {
+        reg.closingBalance = calculateClosing(reg.openingBalance, reg.transactions);
+      }
+      await db.put(reg);
+      closeModal('balanceModal');
+      await loadDailyRegister();
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. ORDER MANAGEMENT: LOCK PROFILE METHOD + DELETE ORDER SUPPORT
+    // -------------------------------------------------------------------------
+    let lockedCustomer = null;
+    let isSubmittingOrder = false;
+
+    async function refreshCustomerDropdown() {
+      const res = await db.allDocs({ startkey: 'cust_', endkey: 'cust_\ufff0', include_docs: true });
+      const sel = document.getElementById('existingCustomerSelect');
+      sel.innerHTML = `<option value="">-- New or Select Saved Customer (${res.rows.length}) --</option>` +
+        res.rows.map(r => `<option value='${JSON.stringify(r.doc).replace(/'/g, "&apos;")}'>${r.doc.name} (${r.doc.phone})</option>`).join('');
+    }
+
+    function prefillCustomerFromSelect() {
+      const val = document.getElementById('existingCustomerSelect').value;
+      if (!val) return;
+      const c = JSON.parse(val);
+      document.getElementById('custPhone').value = c.phone;
+      document.getElementById('custName').value = c.name;
+      document.getElementById('custAddress').value = c.address || '';
+    }
+
+    async function lockCustomerProfile() {
+      const phone = document.getElementById('custPhone').value.trim();
+      const name = document.getElementById('custName').value.trim();
+      const address = document.getElementById('custAddress').value.trim();
+
+      if (!phone || phone.replace(/\D/g, '').length < 6 || !name) {
+        alert('Please enter a valid Customer Phone and Name before locking.');
+        return;
+      }
+
+      const id = IDGen.customer(phone);
+      let custDoc;
+      try {
+        custDoc = await db.get(id);
+        custDoc.name = name;
+        custDoc.address = address;
+        await db.put(custDoc);
+        custDoc = await db.get(id);
+      } catch (e) {
+        if (e.status === 404) {
+          custDoc = { _id: id, type: 'customer', phone, name, address, createdAt: new Date().toISOString() };
+          await db.put(custDoc);
+          custDoc = await db.get(id);
+        } else throw e;
+      }
+
+      lockedCustomer = custDoc;
+      await refreshCustomerDropdown();
+
+      document.getElementById('profileFormFields').classList.add('opacity-50', 'pointer-events-none');
+      document.getElementById('existingCustomerSelect').disabled = true;
+      document.getElementById('btnLockProfile').classList.add('hidden');
+      document.getElementById('btnUnlockProfile').classList.remove('hidden');
+
+      const badge = document.getElementById('lockStatusBadge');
+      badge.textContent = '🔒 LOCKED';
+      badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400';
+
+      document.getElementById('lockedCustLabel').textContent = `${custDoc.name} (${custDoc.phone})`;
+      document.getElementById('orderEntryCard').classList.remove('opacity-50', 'pointer-events-none');
+      await updateNextSerialDisplay();
+    }
+
+    function unlockCustomerProfile() {
+      lockedCustomer = null;
+      document.getElementById('profileFormFields').classList.remove('opacity-50', 'pointer-events-none');
+      document.getElementById('existingCustomerSelect').disabled = false;
+      document.getElementById('btnLockProfile').classList.remove('hidden');
+      document.getElementById('btnUnlockProfile').classList.add('hidden');
+
+      const badge = document.getElementById('lockStatusBadge');
+      badge.textContent = '🔓 UNLOCKED';
+      badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400';
+
+      document.getElementById('lockedCustLabel').textContent = 'None';
+      document.getElementById('orderEntryCard').classList.add('opacity-50', 'pointer-events-none');
+    }
+
+    async function updateNextSerialDisplay() {
+      const res = await db.allDocs({ startkey: 'order_', endkey: 'order_\ufff0' });
+      const nextNum = String(res.rows.length + 1).padStart(4, '0');
+      const serial = `DCP-${new Date().getFullYear()}-${nextNum}`;
+      document.getElementById('orderSerialDisplay').textContent = serial;
+      return serial;
+    }
+
+    function recalcOrderTotal() {
+      const qty = Number(document.getElementById('ordQty').value || 0);
+      const rate = Number(document.getElementById('ordRate').value || 0);
+      const total = Math.round(qty * rate * 100) / 100;
+      document.getElementById('ordTotal').value = total;
+
+      const paid = Number(document.getElementById('ordPaid').value || 0);
+      const due = Math.max(0, total - paid);
+      document.getElementById('ordDueDisplay').textContent = `₹${due.toLocaleString('en-IN')}`;
+    }
+
+    async function handleCreateOrder(e) {
+      e.preventDefault();
+      if (!lockedCustomer) return alert('Lock a customer profile first!');
+      if (isSubmittingOrder) return;
+
+      isSubmittingOrder = true;
+      const btn = document.getElementById('btnSubmitOrder');
+      btn.disabled = true;
+      btn.textContent = 'Committing...';
+
+      try {
+        const serialNo = document.getElementById('orderSerialDisplay').textContent;
+        const totalAmount = Number(document.getElementById('ordTotal').value);
+        const paidAmount = Number(document.getElementById('ordPaid').value);
+        const paymentMode = document.getElementById('ordPayMode').value;
+        const ownerAccount = document.getElementById('ordOwner').value;
+        const dateStr = todayISO();
+
+        const orderDoc = {
+          _id: IDGen.order(serialNo),
+          type: 'order',
+          serialNo,
+          customerId: lockedCustomer._id,
+          customerName: lockedCustomer.name,
+          customerPhone: lockedCustomer.phone,
+          product: document.getElementById('ordProduct').value,
+          qty: Number(document.getElementById('ordQty').value),
+          rate: Number(document.getElementById('ordRate').value),
+          totalAmount,
+          paidAmount,
+          balanceDue: Math.max(0, totalAmount - paidAmount),
+          paymentMode,
+          ownerAccount,
+          date: dateStr,
+          createdAt: new Date().toISOString()
+        };
+
+        await db.put(orderDoc);
+
+        if (paidAmount > 0) {
+          await addLedgerEntry(dateStr, {
+            idempotencyKey: `ord_pay_${serialNo}`,
+            owner: ownerAccount,
+            flow: 'IN',
+            amount: paidAmount,
+            category: 'Order Payment',
+            mode: paymentMode === 'Credit (Udhaar)' ? 'Cash' : paymentMode,
+            tags: [serialNo, lockedCustomer.name],
+            note: `${orderDoc.product} (${orderDoc.qty} pcs) - ${serialNo}`
+          });
+        }
+
+        await updateNextSerialDisplay();
+        await loadOrdersTable();
+        alert(`Order ${serialNo} saved successfully!`);
+      } catch (err) {
+        alert('Order Error: ' + err.message);
+      } finally {
+        isSubmittingOrder = false;
+        btn.disabled = false;
+        btn.textContent = '✅ Commit Order & Post to Register';
+      }
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm('Delete this order and remove its linked payment from the Daily Register?')) return;
+      try {
+        const orderDoc = await db.get(orderId);
+        // Remove linked payment entry in daily register if present
+        try {
+          const reg = await db.get(IDGen.dailyLedger(orderDoc.date));
+          reg.transactions = reg.transactions.filter(t => t.idempotencyKey !== `ord_pay_${orderDoc.serialNo}`);
+          if (!reg.isClosingOverridden) {
+            reg.closingBalance = calculateClosing(reg.openingBalance, reg.transactions);
+          }
+          await db.put(reg);
+        } catch (_) {}
+
+        await db.remove(orderDoc);
+        await refreshAllViews();
+      } catch (err) {
+        alert('Delete error: ' + err.message);
+      }
+    }
+
+    async function clearAllOrders() {
+      if (!confirm('Delete ALL orders and their linked order payment entries from the register?')) return;
+      const res = await db.allDocs({ startkey: 'order_', endkey: 'order_\ufff0', include_docs: true });
+      for (const row of res.rows) {
+        const o = row.doc;
+        try {
+          const reg = await db.get(IDGen.dailyLedger(o.date));
+          reg.transactions = reg.transactions.filter(t => t.idempotencyKey !== `ord_pay_${o.serialNo}`);
+          if (!reg.isClosingOverridden) {
+            reg.closingBalance = calculateClosing(reg.openingBalance, reg.transactions);
+          }
+          await db.put(reg);
+        } catch (_) {}
+        await db.remove(o);
+      }
+      await refreshAllViews();
+    }
+
+    async function loadOrdersTable() {
+      const res = await db.allDocs({ startkey: 'order_', endkey: 'order_\ufff0', include_docs: true });
+      const orders = res.rows.map(r => r.doc).reverse();
+      document.getElementById('orderCountBadge').textContent = `${orders.length} orders`;
+
+      const tbody = document.getElementById('ordersTableBody');
+      if (!orders.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No orders placed yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="px-4 py-3 font-mono font-bold text-amber-400 text-xs">${o.serialNo}</td>
+          <td class="px-4 py-3 text-xs text-slate-400">${o.date}</td>
+          <td class="px-4 py-3">
+            <div class="font-semibold text-white">${o.customerName}</div>
+            <div class="text-xs text-slate-400">${o.customerPhone}</div>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-200">${o.product} <span class="text-slate-400">(${o.qty} × ₹${o.rate})</span></td>
+          <td class="px-4 py-3 text-xs">
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-200">${o.paymentMode}</span>
+            <span class="text-slate-400 ml-1">(${o.ownerAccount})</span>
+          </td>
+          <td class="px-4 py-3 text-right font-bold text-white">₹${o.totalAmount.toLocaleString('en-IN')}</td>
+          <td class="px-4 py-3 text-right font-bold ${o.balanceDue > 0 ? 'text-rose-400' : 'text-emerald-400'}">
+            ₹${o.balanceDue.toLocaleString('en-IN')}
+          </td>
+          <td class="px-4 py-3 text-center">
+            <button onclick="deleteOrder('${o._id}')" class="px-2 py-1 rounded bg-rose-950/80 hover:bg-rose-800 text-rose-300 text-xs transition" title="Delete Order">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. MR. LOGIE — FIXED MULTI-SOURCE NAME & PHONE SEARCH ENGINE
+    // -------------------------------------------------------------------------
+    function askLogieQuick(text) {
+      document.getElementById('logieInput').value = text;
+      handleLogieSubmit(new Event('submit'));
+    }
+
+    async function handleLogieSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('logieInput');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+      input.value = '';
+
+      appendChatBubble(prompt, 'user');
+      const replyHTML = await queryMrLogie(prompt);
+      appendChatBubble(replyHTML, 'ai');
+    }
+
+    function appendChatBubble(html, sender) {
+      const feed = document.getElementById('logieChatFeed');
+      const div = document.createElement('div');
+      if (sender === 'user') {
+        div.className = 'ml-auto bg-amber-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] shadow';
+        div.textContent = html;
+      } else {
+        div.className = 'bg-slate-800/95 border border-slate-700 rounded-2xl rounded-tl-none p-3.5 max-w-[88%] text-slate-200 leading-relaxed';
+        div.innerHTML = html;
+      }
+      feed.appendChild(div);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    async function queryMrLogie(prompt) {
+      const q = prompt.toLowerCase().trim();
+      const today = todayISO();
+
+      // 1. Financial Summary / Vijay & Jay Hisab
+      if (q.includes('summary') || q.includes('vijay') || q.includes('jay') || q === 'hisab' || q === 'balance') {
+        const reg = await getOrCreateDailyRegister(today);
+        const totalIn = reg.transactions.filter(t => t.flow === 'IN').reduce((s, t) => s + Number(t.amount), 0);
+        const totalOut = reg.transactions.filter(t => t.flow === 'OUT').reduce((s, t) => s + Number(t.amount), 0);
+        return `
+          <div class="font-bold text-cyan-400 mb-1">📊 Financial Summary (${today})</div>
+          <div class="grid grid-cols-2 gap-2 text-xs bg-slate-900/80 p-2.5 rounded-lg my-1.5">
+            <div>Vijay Balance: <strong class="text-amber-400">₹${reg.closingBalance.vijay.toLocaleString('en-IN')}</strong></div>
+            <div>Jay Balance: <strong class="text-cyan-400">₹${reg.closingBalance.jay.toLocaleString('en-IN')}</strong></div>
+            <div>Cash in Hand: <strong class="text-emerald-400">₹${reg.closingBalance.cash.toLocaleString('en-IN')}</strong></div>
+            <div>Entries Today: <strong>${reg.transactions.length}</strong></div>
+          </div>
+          <div class="text-xs text-slate-300">Total Receipts: <span class="text-emerald-400">+₹${totalIn.toLocaleString('en-IN')}</span> | Expenses: <span class="text-rose-400">-₹${totalOut.toLocaleString('en-IN')}</span></div>
+        `;
+      }
+
+      // 2. Pending Udhaar / Credit Report
+      if (q.includes('udhaar') || q.includes('due') || q.includes('pending') || q.includes('credit')) {
+        const res = await db.allDocs({ startkey: 'order_', endkey: 'order_\ufff0', include_docs: true });
+        const dueOrders = res.rows.map(r => r.doc).filter(o => o.balanceDue > 0);
+        if (!dueOrders.length) return `✅ Zero pending Udhaar! All customer orders are fully settled.`;
+        const totalDue = dueOrders.reduce((s, o) => s + o.balanceDue, 0);
+        const list = dueOrders.slice(0, 8).map(o => `<li><strong>${o.customerName}</strong> (${o.serialNo}): <span class="text-rose-400 font-bold">₹${o.balanceDue.toLocaleString('en-IN')}</span></li>`).join('');
+        return `
+          <div class="font-bold text-amber-400 mb-1">⏳ Pending Udhaar: ₹${totalDue.toLocaleString('en-IN')}</div>
+          <ul class="list-disc list-inside text-xs space-y-1">${list}</ul>
+        `;
+      }
+
+      // 3. Today's Expenses
+      if (q.includes('expense') || q.includes('kharcha')) {
+        const reg = await getOrCreateDailyRegister(today);
+        const exps = reg.transactions.filter(t => t.flow === 'OUT');
+        if (!exps.length) return `No expenses recorded yet for ${today}.`;
+        const total = exps.reduce((s, e) => s + Number(e.amount), 0);
+        const items = exps.map(e => `<li>${e.owner} — ${e.category}: <strong>₹${e.amount}</strong> ${e.note ? `(${e.note})` : ''}</li>`).join('');
+        return `
+          <div class="font-bold text-rose-400 mb-1">💸 Today's Expenses: ₹${total.toLocaleString('en-IN')}</div>
+          <ul class="list-disc list-inside text-xs space-y-1">${items}</ul>
+        `;
+      }
+
+      // 4. All Customers List
+      if (q.includes('all customer') || q.includes('customer list') || q === 'customers') {
+        const res = await db.allDocs({ startkey: 'cust_', endkey: 'cust_\ufff0', include_docs: true });
+        if (!res.rows.length) return `No customer profiles locked yet.`;
+        return `
+          <div class="font-bold text-emerald-400 mb-1">👥 Saved Customers (${res.rows.length})</div>
+          <ul class="list-disc list-inside text-xs space-y-1">
+            ${res.rows.map(r => `<li><strong>${r.doc.name}</strong> — ${r.doc.phone} (${r.doc.address || 'No address'})</li>`).join('')}
+          </ul>
+        `;
+      }
+
+      // 5. Smart Name / Phone / Serial Search across Customers, Orders & Register Notes
+      const stopWords = ['search', 'customer', 'find', 'history', 'show', 'details', 'info', 'about', 'ka', 'ki', 'ke', 'ko', 'hisab', 'order', 'orders', 'number', 'name', 'batao', 'dikhao', 'hai', 'ji'];
+      const tokens = q
+        .replace(/[^\w\s-]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length >= 2 && !stopWords.includes(w));
+
+      const searchTerms = tokens.length ? tokens : [q.replace(/[^\w\s-]/g, '').trim()];
+
+      const [custRes, ordRes, regRes] = await Promise.all([
+        db.allDocs({ startkey: 'cust_', endkey: 'cust_\ufff0', include_docs: true }),
+        db.allDocs({ startkey: 'order_', endkey: 'order_\ufff0', include_docs: true }),
+        db.allDocs({ startkey: 'ledger_', endkey: 'ledger_\ufff0', include_docs: true })
+      ]);
+
+      const customers = custRes.rows.map(r => r.doc);
+      const orders = ordRes.rows.map(r => r.doc);
+      const registers = regRes.rows.map(r => r.doc);
+
+      const matchesTerm = (text) => {
+        if (!text) return false;
+        const lower = String(text).toLowerCase();
+        return searchTerms.some(term => lower.includes(term));
+      };
+
+      const matchedCustomers = customers.filter(c => matchesTerm(c.name) || matchesTerm(c.phone) || matchesTerm(c.address));
+      const matchedOrders = orders.filter(o =>
+        matchesTerm(o.customerName) ||
+        matchesTerm(o.customerPhone) ||
+        matchesTerm(o.serialNo) ||
+        matchedCustomers.some(mc => mc.phone === o.customerPhone)
+      );
+
+      // Also check register transactions (notes/tags) in case name was only entered in register
+      const matchedTxns = [];
+      registers.forEach(reg => {
+        (reg.transactions || []).forEach(t => {
+          if (matchesTerm(t.note) || (t.tags || []).some(tag => matchesTerm(tag))) {
+            matchedTxns.push({ date: reg.date, ...t });
+          }
+        });
+      });
+
+      if (matchedCustomers.length || matchedOrders.length || matchedTxns.length) {
+        let html = '';
+
+        if (matchedCustomers.length) {
+          html += `<div class="font-bold text-emerald-400 mb-1">👤 Matched Customer Profile(s):</div>`;
+          matchedCustomers.forEach(c => {
+            const cOrders = orders.filter(o => o.customerPhone === c.phone);
+            const cBilled = cOrders.reduce((s, o) => s + o.totalAmount, 0);
+            const cPaid = cOrders.reduce((s, o) => s + o.paidAmount, 0);
+            const cDue = cOrders.reduce((s, o) => s + o.balanceDue, 0);
+            html += `
+              <div class="bg-slate-900/80 border border-slate-700/80 rounded-lg p-2.5 mb-2 text-xs space-y-1">
+                <div class="text-sm font-bold text-white">${c.name} <span class="text-cyan-400 font-mono">(${c.phone})</span></div>
+                ${c.address ? `<div class="text-slate-400">📍 ${c.address}</div>` : ''}
+                <div>Orders: <strong>${cOrders.length}</strong> | Total Billed: <strong>₹${cBilled.toLocaleString('en-IN')}</strong> | Paid: <strong class="text-emerald-400">₹${cPaid.toLocaleString('en-IN')}</strong> | Due: <strong class="text-rose-400">₹${cDue.toLocaleString('en-IN')}</strong></div>
+              </div>
+            `;
+          });
+        }
+
+        if (matchedOrders.length) {
+          html += `<div class="font-bold text-cyan-400 mb-1">🧱 Order History (${matchedOrders.length}):</div><ul class="list-disc list-inside text-xs space-y-1 mb-2">`;
+          matchedOrders.slice(-6).reverse().forEach(o => {
+            html += `<li><strong>${o.serialNo}</strong> (${o.date}) — ${o.customerName}: ${o.product} (${o.qty} pcs) | Total: <strong>₹${o.totalAmount.toLocaleString('en-IN')}</strong>, Due: <span class="${o.balanceDue > 0 ? 'text-rose-400' : 'text-emerald-400'}">₹${o.balanceDue.toLocaleString('en-IN')}</span></li>`;
+          });
+          html += `</ul>`;
+        }
+
+        if (matchedTxns.length && !matchedOrders.length) {
+          html += `<div class="font-bold text-amber-400 mb-1">📒 Register Entries (${matchedTxns.length}):</div><ul class="list-disc list-inside text-xs space-y-1">`;
+          matchedTxns.slice(-5).forEach(t => {
+            html += `<li>${t.date} [${t.owner}] — ${t.category}: <strong>₹${t.amount}</strong> (${t.note || ''})</li>`;
+          });
+          html += `</ul>`;
+        }
+
+        return html;
+      }
+
+      return `No record found matching <strong>"${prompt}"</strong> across Customers, Orders, or Register entries. Check spelling or click <strong>"All customers"</strong> to see saved names.`;
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. CROSS-DEVICE CSV EXPORTER & FULL DATABASE WIPE
+    // -------------------------------------------------------------------------
+    async function exportCSV(type) {
+      let rows = [];
+      if (type === 'orders') {
+        const res = await db.allDocs({ startkey: 'order_', endkey: 'order_\ufff0', include_docs: true });
+        rows.push(['Serial No', 'Date', 'Customer Name', 'Phone', 'Product', 'Qty', 'Rate', 'Total Amount', 'Paid Amount', 'Balance Due', 'Payment Mode', 'Owner'].join(','));
+        res.rows.forEach(({ doc: o }) => {
+          rows.push([
+            o.serialNo, o.date, `"${o.customerName}"`, o.customerPhone, `"${o.product}"`,
+            o.qty, o.rate, o.totalAmount, o.paidAmount, o.balanceDue, `"${o.paymentMode}"`, o.ownerAccount
+          ].join(','));
+        });
+      } else {
+        const res = await db.allDocs({ startkey: 'ledger_', endkey: 'ledger_\ufff0', include_docs: true });
+        rows.push(['Date', 'Time', 'Owner', 'Flow', 'Amount', 'Category', 'Mode', 'Tags', 'Note'].join(','));
+        res.rows.forEach(({ doc: reg }) => {
+          reg.transactions.forEach(t => {
+            rows.push([
+              reg.date, t.timestamp, t.owner, t.flow, t.amount, `"${t.category}"`,
+              `"${t.mode}"`, `"${(t.tags || []).join(';')}"`, `"${(t.note || '').replace(/"/g, '""')}"`
+            ].join(','));
+          });
+        });
+      }
+
+      const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Danteshwari_Cement_Product_${type}_${todayISO()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function updateDbStats() {
+      const info = await db.info();
+      document.getElementById('dbStatsText').textContent = `Local IndexedDB Active • ${info.doc_count} total documents stored safely on device.`;
+    }
+
+    async function resetEntireDatabase() {
+      if (!confirm('WARNING: This will permanently delete ALL orders, daily register entries, and customer profiles on this device. Continue?')) return;
+      await db.destroy();
+      db = new PouchDB('danteshwari_cement_erp_v1', { auto_compaction: true });
+      unlockCustomerProfile();
+      await refreshAllViews();
+      alert('All test data cleared! Database is 100% fresh and empty.');
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. NAVIGATION & INITIAL BOOT
+    // -------------------------------------------------------------------------
+    function switchTab(tabName) {
+      ['register', 'orders', 'logie', 'reports'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tabName) {
+          btn.classList.add('tab-active');
+          btn.classList.remove('text-slate-400');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('text-slate-400');
+        }
+      });
+      if (tabName === 'reports') updateDbStats();
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    async function refreshAllViews() {
+      await loadDailyRegister();
+      await refreshCustomerDropdown();
+      await updateNextSerialDisplay();
+      await loadOrdersTable();
+      await updateDbStats();
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('regDate').value = todayISO();
+      initSync();
+      await refreshAllViews();
+    });
+  </script>
+</body>
+</html>
